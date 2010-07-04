@@ -21,6 +21,7 @@ class Listener:
 	def __init__(self):
 		self.limits = [20.0, 10.0, 10.0]
 		self.factors = [1.0, 1.0, 1.0]
+		self.fovy = 90.0
 	def refresh(self, pos1, pos2):
 		x = (pos1[0] + pos2[0]) / self.factors[0]
 		if x > self.limits[0]:
