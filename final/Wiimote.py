@@ -32,6 +32,8 @@ class Wiimote(threading.Thread):
 		 (0x35, 0x03)),
 		((0x07, 0x00, 0x00, 0x71, 0x01, 0x00, 0x72, 0x00, 0x20),
 		 (0x1f, 0x03)),
+		((0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x00, 0xc0),
+		 (0x40, 0x00)),
 	)
 
 	def __init__(self,address):     
@@ -47,8 +49,13 @@ class Wiimote(threading.Thread):
 
 	def setSensitivity(self, level):
 		pos = level - 1
-		block1 = self.sensitivities[pos][0] + (16 - len(self.sensitivities[pos][0])) * (0,)
-		block2 = self.sensitivities[pos][1] + (16 - len(self.sensitivities[pos][1])) * (0,)
+		block1 = self.sensitivities[pos][0]
+		len1 = len(block1)
+		block1 = block1 + (16 - len1) * (0,)
+		block2 = self.sensitivities[pos][1]
+		len2 = len(block2)
+		block2 = block2 + (16 - len2) * (0,)
+		print (len1, block1, len2, block2)
 		## 4. Write Sensitivity Block 1 to registers at 0xb00000
 		self.send(0x52, 0x16, 0x04, 0xb0, 0x00, 0x00, len(block1), *block1); time.sleep(0.01)
 		## 5. Write Sensitivity Block 2 to registers at 0xb0001a
@@ -111,8 +118,13 @@ class Wiimote(threading.Thread):
 		self.send(0x52,0x1a,0x04);time.sleep(0.01)
 		## 3. Write 0x08 to register 0xb00030
 		self. send(0x52,0x16,0x04,0xb0,0x00,0x30, 1, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );time.sleep(0.01)
+		## 4. Write Sensitivity Block 1 to registers at 0xb00000
+		self. send(0x52,0x16,0x4, 0xb0, 0x0, 0x6, 1, 0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);time.sleep(0.01)
+		self. send(0x52,0x16,0x4, 0xb0, 0x0, 0x8, 1, 0x41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);time.sleep(0.01)
+		## 5. Write Sensitivity Block 2 to registers at 0xb0001a
+		self. send(0x52,0x16,0x4, 0xb0, 0x0, 0x1a, 1, 0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);time.sleep(0.01)
 		## 4.&5. Write sensitivity
-		self.setSensitivity(5)
+		# self.setSensitivity(6)
 		## 6. Write Mode Number to register 0xb00033
 		self. send(0x52,0x16,0x4, 0xb0, 0x0, 0x33, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);time.sleep(0.01)
 		## 7. Write 0x08 to register 0xb00030 (again) 

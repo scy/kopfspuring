@@ -19,9 +19,10 @@ tracker.connect()
 
 class Listener:
 	def __init__(self):
-		self.limits = [20.0, 10.0, 10.0]
+		self.limits = [10.0, 5.0, 13.0]
 		self.factors = [1.0, 1.0, 1.0]
-		self.fovy = 90.0
+		self.fovy = 160
+		self.valid = False
 	def refresh(self, pos1, pos2):
 		x = (pos1[0] + pos2[0]) / self.factors[0]
 		if x > self.limits[0]:
@@ -55,6 +56,8 @@ class Listener:
 		wy = l * y
 		wx = l * x
 		self.lookat = [wx + 1.5, wy + 1.5, 0.0]
+		self.fovy = 170 - 17 * (z - 3)
+		self.valid = tracker.valid
 		print ((x, y, z), l, self.lookat)
 
 motes = Listener()
@@ -162,7 +165,10 @@ while not done:
 	setColor(0.7, 0.3, 0, 0.6)
 	drawCuboid(0, 0, 0, 3, 3, 3)
 	
-	setColor(0, 1, 0.8, 0.5)
+	cuboidColor = (0, 1, 0.8, 0.5)
+	if not motes.valid:
+		cuboidColor = (1, 0.2, 0, 0.5)
+	setColor(*cuboidColor)
 	drawCuboid(0.5, 0, 1, 1, 0.5, 2)
 	
 	setColor(0.5, 0, 0, 0.7)

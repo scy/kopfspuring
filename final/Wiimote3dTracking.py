@@ -29,6 +29,8 @@ class Wiimote3dTracker(threading.Thread):
 		## Currently, any remotes past the first two are ignored, as the IR
 		## parser doesn't know what to do with them. Neither do I actually...
 
+		self.badcoords = (1023, 1023)
+		self.valid = False
 		self.adrs=addresses
 		if len(self.adrs) ==1 and type(self.adrs[0]) == list:
 			self.adrs = self.adrs[0]
@@ -81,8 +83,8 @@ class Wiimote3dTracker(threading.Thread):
 			data  = [wm.getData() for wm in self.wiimotes]
 			xys1, xys2 = self.irParser.parseWiiData( data )
 			if xys1 and xys2:
+				self.valid = xys1[0] != self.badcoords and xys1[1] != self.badcoords and xys2[0] != self.badcoords and xys2[1] != self.badcoords
 				self.coordinateTracker.process( xys1, xys2 )
-				print (xys1, xys2)
 			result = True
 			if len(self.cartesianListeners) > 0:
 				pos1,pos2 = self.coordinateTracker.getListOfCartesianCoordinates()
