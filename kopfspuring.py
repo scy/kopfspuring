@@ -19,8 +19,9 @@ tracker.connect()
 
 class Listener:
 	def __init__(self):
-		self.limits = [10.0, 5.0, 13.0]
+		self.limits = [0.5, 0.5, 5]
 		self.factors = [1.0, 1.0, 1.0]
+		self.head = [0, 0, 1]
 		self.fovy = 160
 		self.valid = False
 	def refresh(self, pos1, pos2):
@@ -52,13 +53,16 @@ class Listener:
 			if nu > self.factors[2]:
 				self.factors[2] = nu
 				z = self.limits[2]
-		l = -3 / (z - 3)
-		wy = l * y
-		wx = l * x
-		self.lookat = [wx + 1.5, wy + 1.5, 0.0]
-		self.fovy = 170 - 17 * (z - 3)
+		if z == 0:
+			z = 0.05
+		#l = -3 / (z - 3)
+		#wy = l * y
+		#wx = l * x
+		#self.lookat = [wx + 1.5, wy + 1.5, 0.0]
+		self.lookat = [x, y, 0.0]
+		self.head = [x, y, z]
 		self.valid = tracker.valid
-		print ((x, y, z), l, self.lookat)
+		print ((x, y, z), self.lookat)
 
 motes = Listener()
 tracker.register(motes)
@@ -151,37 +155,40 @@ glEnable(GL_CULL_FACE)
 height = sur.get_height()
 width = sur.get_width()
 aspect = width / height
+nearplane = 0.05
 
 while not done:
 	tracker.refresh()
-	lp = vary(1.5, 2000)
-	glLightfv(GL_LIGHT0, GL_POSITION, [3, 1.5 + lp, 3, 1])
+	lp = vary(0.5, 2000)
+	glLightfv(GL_LIGHT0, GL_POSITION, [0, 0.5 + lp, 3, 1])
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 	
 	glMatrixMode(GL_MODELVIEW)
 	glLoadIdentity()
-	gluLookAt(1.5, 1.5, 3, motes.lookat[0], motes.lookat[1], motes.lookat[2], 0, 1, 0)
+	gluLookAt(motes.head[0], motes.head[1], motes.head[2], motes.head[0], motes.head[1], 0, 0, 1, 0)
+	# gluLookAt(1.5, 1.5, 3, motes.lookat[0], motes.lookat[1], motes.lookat[2], 0, 1, 0)
 	
 	setColor(0.7, 0.3, 0, 0.6)
-	drawCuboid(0, 0, 0, 3, 3, 3)
+	drawCuboid(-0.5, -0.5, 0, 0.5, 0.5, 1)
 	
 	cuboidColor = (0, 1, 0.8, 0.5)
 	if not motes.valid:
 		cuboidColor = (1, 0.2, 0, 0.5)
 	setColor(*cuboidColor)
-	drawCuboid(0.5, 0, 1, 1, 0.5, 2)
+	drawCuboid(-0.4, -0.5, 0.2, 0.1, -0.4, 0.6)
 	
 	setColor(0.5, 0, 0, 0.7)
-	drawSphere(0.5, 0.5, 2.3, 0.5)
+	drawSphere(-0.3, -0.3, 0.8, 0.1)
 	
 	setColor(0, 1, 0, 0.5)
-	drawSphere(1.7, 1.5 + vary(0.5, 10000), 1, 1)
+	drawSphere(0.2, vary(0.2, 10000), 0.4, 0.3)
 	
 	glViewport(0, 0, width, height)
 	glMatrixMode(GL_PROJECTION)
 	glLoadIdentity()
-	gluPerspective(motes.fovy, aspect, 1, 10)
-	# glFrustum(0, 3, 0, 3, 1, 4)
+	#gluPerspective(motes.fovy, aspect, 1, 100)
+	(x, y, z) = motes.head
+	glFrustum(nearplane*(-.5*aspect+x)/z, nearplane*(.5*aspect+x)/z, nearplane*(-.5-y)/z, nearplane*(.5-y)/z, nearplane, 100)
 	pygame.display.flip()
 	chill(30)
 	event = pygame.event.poll()
